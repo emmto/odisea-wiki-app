@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070387598751",
+    "project_id": "odisea-wiki-app",
+    "storage_bucket": "odisea-wiki-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070387598751:android:e4a8750ae8a00f8257d9aa",
+        "android_client_info": {
+          "package_name": "com.example.odisea_wiki_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZ9TxXoElfppQoTU9Q1VilHG98OcQ3mEE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
