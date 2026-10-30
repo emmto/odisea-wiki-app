@@ -1,6 +1,6 @@
-# 🍌 La Odisea del Pan de Plátano - Wiki Companion App
+# 🍌 La Odisea del Pan de Plátano - Wiki App
 
-Aplicación móvil complementaria (Wiki Companion) para el videojuego **La Odisea del Pan de Plátano**, desarrollada en **Flutter** con backend en la nube mediante **Google Firebase**.
+Aplicación móvil complementaria (Wiki) para el videojuego **La Odisea del Pan de Plátano**, desarrollada en **Flutter** con backend en la nube mediante **Google Firebase**.
 
 Proyecto académico desarrollado para la materia de **Desarrollo Móvil (IDGS - Unidad 2)** en la **Universidad Tecnológica de Nayarit**.
 

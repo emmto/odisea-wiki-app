@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/validation_utils.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/odisea_button.dart';
 import '../../widgets/odisea_logo_badge.dart';
@@ -28,6 +30,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _handleResetPassword() async {
+    if (_isLoading) return; // Prevenir doble clic
+    FocusScope.of(context).unfocus(); // Ocultar teclado
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -36,7 +41,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     });
 
     try {
-      await _authService.sendPasswordReset(email: _emailController.text);
+      await _authService.sendPasswordReset(email: _emailController.text.trim().toLowerCase());
       if (mounted) {
         setState(() {
           _emailSent = true;
@@ -81,6 +86,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
             child: _emailSent ? _buildSuccessView() : _buildFormView(),
           ),
@@ -89,7 +95,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  // Vista de confirmación cuando el correo ya fue despachado
   Widget _buildSuccessView() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -135,7 +140,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             border: Border.all(color: AppColors.doughBeige, width: 1.5),
           ),
           child: Text(
-            _emailController.text.trim(),
+            _emailController.text.trim().toLowerCase(),
             style: GoogleFonts.outfit(
               fontWeight: FontWeight.bold,
               color: AppColors.darkBrown,
@@ -162,7 +167,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
-  // Vista del formulario inicial para ingresar el correo
   Widget _buildFormView() {
     return Form(
       key: _formKey,
@@ -191,7 +195,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           const SizedBox(height: 28),
 
-          // Banner de error si falla
           if (_errorMessage != null) ...[
             Container(
               padding: const EdgeInsets.all(12),
@@ -232,20 +235,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           TextFormField(
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _handleResetPassword(),
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             style: GoogleFonts.rubik(color: AppColors.darkBrown),
+            inputFormatters: [
+              FilteringTextInputFormatter.deny(RegExp(r'\s')),
+            ],
             decoration: const InputDecoration(
               hintText: 'panadero@ejemplo.com',
               prefixIcon: Icon(Icons.email_outlined, color: AppColors.darkBrown),
             ),
-            validator: (val) {
-              if (val == null || val.trim().isEmpty) {
-                return 'Ingresa tu correo registrado';
-              }
-              if (!val.contains('@') || !val.contains('.')) {
-                return 'Ingresa un correo electrónico válido';
-              }
-              return null;
-            },
+            validator: ValidationUtils.validateEmail,
           ),
           const SizedBox(height: 26),
 

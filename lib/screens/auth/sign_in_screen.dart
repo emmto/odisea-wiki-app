@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/validation_utils.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/odisea_button.dart';
 import '../../widgets/odisea_logo_badge.dart';
@@ -32,6 +34,9 @@ class _SignInScreenState extends State<SignInScreen> {
   }
 
   Future<void> _handleSignIn() async {
+    if (_isLoading) return; // Evitar doble submit
+    FocusScope.of(context).unfocus(); // Ocultar teclado
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -41,10 +46,9 @@ class _SignInScreenState extends State<SignInScreen> {
 
     try {
       await _authService.signInWithEmail(
-        email: _emailController.text,
+        email: _emailController.text.trim().toLowerCase(),
         password: _passwordController.text,
       );
-      // AuthWrapper se encargará de redirigir a HomeScreen al detectar la sesión iniciada
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -67,6 +71,7 @@ class _SignInScreenState extends State<SignInScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
             child: Form(
               key: _formKey,
@@ -74,11 +79,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo squircle con panadero / hogaza dorada
                   const Center(child: OdiseaLogoBadge(size: 96)),
                   const SizedBox(height: 24),
 
-                  // Título del juego y subtítulo de acceso
                   Text(
                     'La Odisea del Pan de Plátano',
                     textAlign: TextAlign.center,
@@ -98,7 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'WIKI',
+                        'WIKI COMPANION',
                         style: GoogleFonts.outfit(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -110,14 +113,14 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   const SizedBox(height: 32),
 
-                  // Banner de error si falla
+                  // Banner de error si falla Firebase
                   if (_errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.errorRed.withOpacity(0.1),
+                        color: AppColors.errorRed.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.errorRed.withOpacity(0.4)),
+                        border: Border.all(color: AppColors.errorRed.withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         children: [
@@ -152,20 +155,18 @@ class _SignInScreenState extends State<SignInScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      // No permitir espacios
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
                     decoration: const InputDecoration(
                       hintText: 'panadero@ejemplo.com',
                       prefixIcon: Icon(Icons.email_outlined, color: AppColors.darkBrown),
                     ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa tu correo';
-                      }
-                      if (!val.contains('@') || !val.contains('.')) {
-                        return 'Ingresa un correo válido';
-                      }
-                      return null;
-                    },
+                    validator: ValidationUtils.validateEmail,
                   ),
                   const SizedBox(height: 18),
 
@@ -182,14 +183,21 @@ class _SignInScreenState extends State<SignInScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _handleSignIn(),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(32),
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
                     decoration: InputDecoration(
                       hintText: '••••••••',
                       prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.darkBrown),
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                          color: AppColors.darkBrown.withOpacity(0.6),
+                          color: AppColors.darkBrown.withValues(alpha: 0.6),
                         ),
                         onPressed: () {
                           setState(() {
@@ -198,15 +206,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         },
                       ),
                     ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Ingresa tu contraseña';
-                      }
-                      if (val.length < 6) {
-                        return 'Mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
+                    validator: ValidationUtils.validateSignInPassword,
                   ),
                   const SizedBox(height: 8),
 
@@ -242,7 +242,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                   // Botón Iniciar Sesión (Amarillo Plátano)
                   OdiseaButton(
-                    text: 'Ingresar',
+                    text: 'Entrar a la Cocina',
                     icon: Icons.login_rounded,
                     isLoading: _isLoading,
                     onPressed: _handleSignIn,
@@ -256,7 +256,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       Text(
                         '¿No tienes cuenta? ',
                         style: GoogleFonts.rubik(
-                          color: AppColors.darkBrown.withOpacity(0.7),
+                          color: AppColors.darkBrown.withValues(alpha: 0.7),
                           fontSize: 14,
                         ),
                       ),

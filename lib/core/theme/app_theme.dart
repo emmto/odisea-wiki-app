@@ -57,6 +57,13 @@ class AppTheme {
         filled: true,
         fillColor: AppColors.white,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        errorMaxLines: 3,
+        errorStyle: GoogleFonts.rubik(
+          color: AppColors.errorRed,
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+          height: 1.25,
+        ),
         hintStyle: GoogleFonts.rubik(
           color: AppColors.darkBrown.withOpacity(0.4),
           fontSize: 14,

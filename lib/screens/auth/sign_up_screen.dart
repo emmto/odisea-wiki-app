@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/utils/validation_utils.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/odisea_button.dart';
 import '../../widgets/odisea_logo_badge.dart';
@@ -35,6 +37,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Future<void> _handleSignUp() async {
+    if (_isLoading) return; // Prevenir múltiples envíos por doble click
+    FocusScope.of(context).unfocus(); // Ocultar teclado
+
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
@@ -44,12 +49,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
     try {
       await _authService.signUpWithEmail(
-        username: _usernameController.text,
-        email: _emailController.text,
+        username: _usernameController.text.trim(),
+        email: _emailController.text.trim().toLowerCase(),
         password: _passwordController.text,
       );
       if (mounted) {
-        // Redirige al inicio limpiando el historial de navegación
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
@@ -91,6 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
             child: Form(
               key: _formKey,
@@ -111,7 +116,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Únete a la expedición',
+                    'Únete a la expedición y guarda tus secretos de horneado',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.rubik(
                       fontSize: 13,
@@ -120,7 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Banner de error si falla
+                  // Banner de error si falla Firebase
                   if (_errorMessage != null) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
@@ -161,20 +166,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _usernameController,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(25),
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ_ ]')),
+                    ],
                     decoration: const InputDecoration(
                       hintText: 'Ej. UlisesElValiente',
                       prefixIcon: Icon(Icons.person_outline_rounded, color: AppColors.darkBrown),
                     ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa un nombre de usuario';
-                      }
-                      if (val.trim().length < 3) {
-                        return 'Mínimo 3 caracteres';
-                      }
-                      return null;
-                    },
+                    validator: ValidationUtils.validateUsername,
                   ),
                   const SizedBox(height: 16),
 
@@ -191,20 +194,18 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      // No permitir espacios bajo ninguna circunstancia
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
                     decoration: const InputDecoration(
                       hintText: 'panadero@ejemplo.com',
                       prefixIcon: Icon(Icons.email_outlined, color: AppColors.darkBrown),
                     ),
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) {
-                        return 'Ingresa tu correo';
-                      }
-                      if (!val.contains('@') || !val.contains('.')) {
-                        return 'Ingresa un correo válido';
-                      }
-                      return null;
-                    },
+                    validator: ValidationUtils.validateEmail,
                   ),
                   const SizedBox(height: 16),
 
@@ -221,9 +222,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
+                    textInputAction: TextInputAction.next,
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(32),
+                      // Bloquear espacios en la contraseña
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
                     decoration: InputDecoration(
-                      hintText: '••••••••',
+                      hintText: 'Mínimo 6 caracteres (letras y números)',
                       prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.darkBrown),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -237,15 +245,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         },
                       ),
                     ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) {
-                        return 'Ingresa tu contraseña';
-                      }
-                      if (val.length < 6) {
-                        return 'Mínimo 6 caracteres';
-                      }
-                      return null;
-                    },
+                    validator: ValidationUtils.validateSignUpPassword,
                   ),
                   const SizedBox(height: 16),
 
@@ -262,7 +262,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   TextFormField(
                     controller: _confirmPasswordController,
                     obscureText: _obscureConfirm,
+                    textInputAction: TextInputAction.done,
+                    onFieldSubmitted: (_) => _handleSignUp(),
+                    autovalidateMode: AutovalidateMode.onUserInteraction,
                     style: GoogleFonts.rubik(color: AppColors.darkBrown),
+                    inputFormatters: [
+                      LengthLimitingTextInputFormatter(32),
+                      FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                    ],
                     decoration: InputDecoration(
                       hintText: '••••••••',
                       prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.darkBrown),
@@ -278,12 +285,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         },
                       ),
                     ),
-                    validator: (val) {
-                      if (val != _passwordController.text) {
-                        return 'Las contraseñas no coinciden';
-                      }
-                      return null;
-                    },
+                    validator: (val) => ValidationUtils.validateConfirmPassword(val, _passwordController.text),
                   ),
                   const SizedBox(height: 28),
 
