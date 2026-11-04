@@ -101,7 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        'WIKI COMPANION',
+                        'WIKI',
                         style: GoogleFonts.outfit(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
@@ -242,7 +242,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
                   // Botón Iniciar Sesión (Amarillo Plátano)
                   OdiseaButton(
-                    text: 'Entrar a la Cocina',
+                    text: 'Ingresar',
                     icon: Icons.login_rounded,
                     isLoading: _isLoading,
                     onPressed: _handleSignIn,

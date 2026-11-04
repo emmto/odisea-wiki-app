@@ -116,7 +116,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Únete a la expedición y guarda tus secretos de horneado',
+                    'Únete a la expedición',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.rubik(
                       fontSize: 13,
