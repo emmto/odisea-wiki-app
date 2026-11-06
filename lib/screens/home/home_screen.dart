@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
         index: _currentIndex,
         children: [
           DashboardTab(onNavigateToTab: (index) => setState(() => _currentIndex = index)),
-          const CharactersTab(),
+          CharactersTab(onBack: () => setState(() => _currentIndex = 0)),
           MapTab(onBack: () => setState(() => _currentIndex = 0)),
           const ProfileTab(),
         ],

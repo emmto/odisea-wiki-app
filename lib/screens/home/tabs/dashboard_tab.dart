@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../widgets/odisea_action_card.dart';
+import '../../story/story_screen.dart';
+import '../../recipe/recipe_screen.dart';
 
 class DashboardTab extends StatelessWidget {
   final Function(int) onNavigateToTab;
@@ -80,10 +82,10 @@ class DashboardTab extends StatelessWidget {
                   title: 'Ver Historia',
                   subtitle: 'Resumen de la aventura, objetivos de la odisea y cronología principal',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Abriendo Historia y Cronología...'),
-                        duration: Duration(seconds: 1),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StoryScreen(),
                       ),
                     );
                   },
@@ -115,10 +117,10 @@ class DashboardTab extends StatelessWidget {
                   title: 'Receta del Pan de Plátano',
                   subtitle: 'Ingredientes, pasos y secretos de repostería',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Consultando Receta Secreta...'),
-                        duration: Duration(seconds: 1),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RecipeScreen(),
                       ),
                     );
                   },
