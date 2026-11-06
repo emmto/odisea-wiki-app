@@ -85,10 +85,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ),
       body: SafeArea(
         child: Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
-            child: _emailSent ? _buildSuccessView() : _buildFormView(),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 24.0),
+              child: _emailSent ? _buildSuccessView() : _buildFormView(),
+            ),
           ),
         ),
       ),

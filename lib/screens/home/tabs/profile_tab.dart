@@ -527,10 +527,13 @@ class _ProfileTabState extends State<ProfileTab> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-        child: Column(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 540),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            child: Column(
           children: [
             // Avatar con botón de cámara y actualización en vivo
             Stack(
@@ -593,19 +596,16 @@ class _ProfileTabState extends State<ProfileTab> {
             // Acciones obligatorias por rúbrica
             _buildActionTile(
               title: 'Cambiar nombre',
-              subtitle: 'Actualiza tu nombre de aventurero',
               icon: Icons.badge_outlined,
               onTap: _showChangeNameDialog,
             ),
             _buildActionTile(
               title: 'Cambiar contraseña',
-              subtitle: 'Actualiza la clave secreta de tu cuenta',
               icon: Icons.key_outlined,
               onTap: _showChangePasswordDialog,
             ),
             _buildActionTile(
               title: 'Subir foto de perfil',
-              subtitle: 'Cámara, galería o avatares de la Odisea',
               icon: Icons.image_outlined,
               onTap: _showPhotoOptionsBottomSheet,
             ),
@@ -650,12 +650,13 @@ class _ProfileTabState extends State<ProfileTab> {
           ],
         ),
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildActionTile({
     required String title,
-    required String subtitle,
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -681,13 +682,6 @@ class _ProfileTabState extends State<ProfileTab> {
             fontSize: 15,
             fontWeight: FontWeight.bold,
             color: AppColors.darkBrown,
-          ),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: GoogleFonts.rubik(
-            fontSize: 12,
-            color: AppColors.darkBrown.withValues(alpha: 0.6),
           ),
         ),
         trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: AppColors.darkBrown),

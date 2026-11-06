@@ -239,7 +239,7 @@ class _SplashScreenState extends State<SplashScreen>
                                 ),
                               ),
                               child: Text(
-                                'WIKI COMPANION OFICIAL',
+                                'WIKI OFICIAL',
                                 style: GoogleFonts.outfit(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,

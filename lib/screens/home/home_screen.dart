@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -16,33 +17,57 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final GlobalKey<NavigatorState> _dashboardNavigatorKey =
+      GlobalKey<NavigatorState>();
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      canPop: _currentIndex == 0,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
+
+        // 1. Si el navegador de Inicio tiene sub-pantallas (Historia, Niveles, Receta...), retroceder allí:
+        if (_currentIndex == 0 &&
+            _dashboardNavigatorKey.currentState?.canPop() == true) {
+          _dashboardNavigatorKey.currentState?.pop();
+          return;
+        }
+
+        // 2. Si estamos en otra pestaña (Personajes, Mapa, Perfil), regresar a Inicio:
         if (_currentIndex != 0) {
           setState(() {
             _currentIndex = 0;
           });
+          return;
         }
+
+        // 3. Si ya estamos en la raíz de Inicio, salir de la app:
+        SystemNavigator.pop();
       },
       child: Scaffold(
         backgroundColor: AppColors.backgroundCream,
         body: IndexedStack(
           index: _currentIndex,
           children: [
-            DashboardTab(
-              onNavigateToTab: (index) => setState(() => _currentIndex = index),
+            // Pestaña 0: Inicio con su propio Navigator interno para mantener la barra inferior visible siempre
+            Navigator(
+              key: _dashboardNavigatorKey,
+              onGenerateRoute: (settings) {
+                return MaterialPageRoute(
+                  builder: (context) => DashboardTab(
+                    onNavigateToTab: (index) =>
+                        setState(() => _currentIndex = index),
+                  ),
+                );
+              },
             ),
             CharactersTab(onBack: () => setState(() => _currentIndex = 0)),
             MapTab(onBack: () => setState(() => _currentIndex = 0)),
             const ProfileTab(),
           ],
         ),
-        // BARRA DE NAVEGACIÓN INFERIOR (Propuesta B: Inicio, Personajes, Mapa, Perfil)
+        // BARRA DE NAVEGACIÓN INFERIOR (Visible permanentemente en toda la app)
         bottomNavigationBar: Container(
           decoration: BoxDecoration(
             color: AppColors.topBarBeige,
@@ -59,7 +84,15 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: BottomNavigationBar(
             currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
+            onTap: (index) {
+              if (index == _currentIndex && index == 0) {
+                // Si toca "Inicio" cuando ya está en Inicio, regresar al Dashboard principal
+                _dashboardNavigatorKey.currentState
+                    ?.popUntil((route) => route.isFirst);
+              } else {
+                setState(() => _currentIndex = index);
+              }
+            },
             backgroundColor: AppColors.topBarBeige,
             type: BottomNavigationBarType.fixed,
             elevation: 0,

@@ -452,10 +452,13 @@ class _CharactersTabState extends State<CharactersTab> {
               itemBuilder: (context, index) {
                 final character = characters[index];
 
-                return SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(top: 14, bottom: 20),
-                  child: Column(
+                return Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 580),
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.only(top: 14, bottom: 20),
+                      child: Column(
                     children: [
                       // BADGE DEL ROL (PROTAGONISTA, ALIADO, ENEMIGA, ANTAGONISTA)
                       Container(
@@ -667,8 +670,10 @@ class _CharactersTabState extends State<CharactersTab> {
                       ),
                     ],
                   ),
-                );
-              },
+                ),
+              ),
+            );
+          },
             ),
           ),
         ],

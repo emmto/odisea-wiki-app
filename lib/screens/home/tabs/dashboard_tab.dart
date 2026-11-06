@@ -74,9 +74,12 @@ class DashboardTab extends StatelessWidget {
           ),
 
           // 2. CONTENIDO PRINCIPAL: 5 TARJETAS DE ACCIÓN LIMPIAS (Fondo liso Crema)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16.0),
-            child: Column(
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16.0),
+                child: Column(
               children: [
                 // Tarjeta 1: Ver Historia
                 OdiseaActionCard(
@@ -152,8 +155,10 @@ class DashboardTab extends StatelessWidget {
               ],
             ),
           ),
-        ],
+        ),
       ),
-    );
+    ],
+  ),
+);
   }
 }
