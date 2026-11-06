@@ -5,6 +5,7 @@ import '../../../widgets/odisea_action_card.dart';
 import '../../story/story_screen.dart';
 import '../../recipe/recipe_screen.dart';
 import '../../levels/levels_screen.dart';
+import '../../storyboard/storyboard_screen.dart';
 
 class DashboardTab extends StatelessWidget {
   final Function(int) onNavigateToTab;
@@ -121,10 +122,10 @@ class DashboardTab extends StatelessWidget {
                   title: 'Storyboard',
                   subtitle: 'Bocetos de escenas, guiones gráficos y flujo de cinemáticas',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Bocetos de escenas en preparación...'),
-                        duration: Duration(seconds: 1),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const StoryboardScreen(),
                       ),
                     );
                   },
