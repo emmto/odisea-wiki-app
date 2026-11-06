@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'dart:developer' as developer;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -11,6 +13,13 @@ class AuthService {
 
   // Usuario actual
   User? get currentUser => _auth.currentUser;
+
+  // Stream en tiempo real de los datos del usuario en Firestore
+  Stream<DocumentSnapshot<Map<String, dynamic>>>? get userDocStream {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return null;
+    return _firestore.collection('users').doc(uid).snapshots();
+  }
 
   // Registrar nuevo usuario con Email, Contraseña y Nombre de Panadero/Aventurero
   Future<UserCredential> signUpWithEmail({
@@ -94,6 +103,89 @@ class AuthService {
       developer.log('Error general en resetPassword: $e');
       throw 'Error al enviar el correo de recuperación: $e';
     }
+  }
+
+  // Obtener la URL o avatar actual de Firestore o Auth
+  Future<String?> getUserPhotoUrl() async {
+    final user = _auth.currentUser;
+    if (user == null) return null;
+
+    try {
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      if (doc.exists) {
+        final data = doc.data();
+        if (data != null && data['photoUrl'] != null) {
+          return data['photoUrl'] as String;
+        }
+      }
+    } catch (e) {
+      developer.log('Error obteniendo photoUrl de Firestore: $e');
+    }
+
+    return user.photoURL;
+  }
+
+  // Subir o actualizar foto de perfil a Firestore (100% gratuito sin plan Blaze)
+  Future<String> updateProfilePhoto(XFile imageFile) async {
+    final user = _auth.currentUser;
+    if (user == null) throw 'No hay sesión de usuario activa.';
+
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
+    final photoUrl = 'data:image/jpeg;base64,$base64Image';
+
+    // Guardar en el documento del usuario en Cloud Firestore
+    await _firestore.collection('users').doc(user.uid).set({
+      'photoUrl': photoUrl,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    developer.log('Foto de perfil guardada exitosamente en Firestore para ${user.uid}');
+    return photoUrl;
+  }
+
+  // Establecer avatar temático del videojuego
+  Future<void> updateGameAvatar(String avatarId) async {
+    final user = _auth.currentUser;
+    if (user == null) throw 'No hay sesión de usuario activa.';
+
+    final avatarTag = 'avatar:$avatarId';
+
+    // 1. Actualizar en Firebase Auth
+    try {
+      await user.updatePhotoURL(avatarTag);
+    } catch (e) {
+      developer.log('Error en updatePhotoURL: $e');
+    }
+
+    // 2. Actualizar en Cloud Firestore
+    await _firestore.collection('users').doc(user.uid).set({
+      'photoUrl': avatarTag,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    try {
+      await user.reload();
+    } catch (_) {}
+  }
+
+  // Eliminar foto de perfil
+  Future<void> removeProfilePhoto() async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await user.updatePhotoURL(null);
+    } catch (_) {}
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'photoUrl': FieldValue.delete(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+
+    try {
+      await user.reload();
+    } catch (_) {}
   }
 
   // Mensajes de error amigables en español

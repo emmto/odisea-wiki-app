@@ -4,6 +4,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../widgets/odisea_action_card.dart';
 import '../../story/story_screen.dart';
 import '../../recipe/recipe_screen.dart';
+import '../../levels/levels_screen.dart';
 
 class DashboardTab extends StatelessWidget {
   final Function(int) onNavigateToTab;
@@ -86,6 +87,20 @@ class DashboardTab extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const StoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+
+                // Tarjeta 2: Niveles del Juego
+                OdiseaActionCard(
+                  title: 'Niveles del Juego',
+                  subtitle: 'Retos, objetivos, mecánicas y escenarios de cada nivel',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LevelsScreen(),
                       ),
                     );
                   },
