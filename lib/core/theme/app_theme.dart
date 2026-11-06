@@ -94,6 +94,11 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.errorRed, width: 2.5),
         ),
       ),
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+        },
+      ),
     );
   }
 }
